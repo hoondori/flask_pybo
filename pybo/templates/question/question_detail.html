@@ -13,6 +13,15 @@
                 </div>
             </div>
         </div>
+        <!-- 질문 수정/삭제 - 자신이 만든 것만 -->
+        {% if g.user == question.user %}
+        <div class="my-3">
+            <a href="{{ url_for('question.modify', question_id=question.id) }}"
+               class="btn btn-sm btn-outline-secondary">수정</a>
+            <a href="#" class="delete btn btn-sm btn-outline-secondary"
+               data-uri="{{ url_for('question.delete', question_id=question.id) }}">삭제</a>
+        </div>
+        {% endif %}
     </div>
 
     <!-- 답변 개수 -->
@@ -28,6 +37,15 @@
                     <div class="mb-2">{{ question.user.username }} </div>
                     <div>{{ answer.create_date|datetime }}</div>
                 </div>
+                <!-- 답변 수정/삭제 - 자신이 만든 것만 -->
+                {% if g.user == question.user %}
+                <div class="my-3">
+                    <a href="{{ url_for('answer.modify', answer_id=answer.id) }}"
+                       class="btn btn-sm btn-outline-secondary">수정</a>
+                    <a href="#" class="delete btn btn-sm btn-outline-secondary"
+                       data-uri="{{ url_for('answer.delete', answer_id=answer.id) }}">삭제</a>
+                </div>
+                {% endif %}
             </div>
         </div>
     </div>
@@ -49,4 +67,16 @@
         <input type="submit" value="답변등록" class="btn btn-primary">
     </form>
 </div>
+{% endblock %}
+
+{% block script %}
+<script type='text/javascript'>
+$(document).ready(function(){
+    $(".delete").on('click', function() {
+        if(confirm("정말로 삭제할랑까나?")) {
+            location.href = $(this).data('uri');
+        }
+    });
+});
+</script>
 {% endblock %}

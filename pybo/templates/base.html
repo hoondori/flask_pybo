@@ -8,10 +8,6 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='bootstrap.min.css') }}">
     <!-- pybo CSS -->
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-    <!-- jQuery JS -->
-    <script src="{{ url_for('static', filename='jquery-3.7.1.min.js') }}"></script>
-    <!-- Bootstrap JS -->
-    <script src="{{ url_for('static', filename='bootstrap.min.js') }}"></script>
     <title>Hello, pybo!</title>
 </head>
 {% include "navbar.html" %}
@@ -20,5 +16,14 @@
 {% block content %}
 {% endblock %}
 <!-- 기본 템플릿 안에 삽입될 내용 End -->
+
+<!-- jQuery JS -->
+<script src="{{ url_for('static', filename='jquery-3.7.1.min.js') }}"></script>
+<!-- Bootstrap JS -->
+<script src="{{ url_for('static', filename='bootstrap.min.js') }}"></script>
+<!-- 자바스크립트 Start -->
+{% block script %}
+{% endblock %}
+<!-- 자바스크립트 End -->
 </body>
 </html>

@@ -25,7 +25,10 @@ def create(question_id):
         answer = Answer(content=content, create_date=datetime.now(), user=g.user)
         question.answer_set.append(answer)
         db.session.commit()
-        return redirect(url_for('question.detail', question_id=question.id))
+        return redirect('{}#answer_{}'.format(
+            url_for('question.detail', question_id=question.id),
+            answer.id
+        ))
 
     return render_template('question/question_detail.html', question=question, form=form)
 

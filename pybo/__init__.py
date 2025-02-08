@@ -33,11 +33,12 @@ def create_app():
     from . import models  # migrate 객체가 models.py를 참조하게 함
 
     # app에 블루프린트 적용
-    from  .views import main_views, question_views, answer_views, auth_views
+    from  .views import main_views, question_views, answer_views, auth_views, vote_views
     app.register_blueprint(main_views.bp)
     app.register_blueprint(question_views.bp)
     app.register_blueprint(answer_views.bp)
     app.register_blueprint(auth_views.bp)
+    app.register_blueprint(vote_views.bp)
 
     # 필터
     from .filter import format_datetime

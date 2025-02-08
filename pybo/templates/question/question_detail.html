@@ -1,27 +1,46 @@
 {% extends 'base.html' %}
 {% block content %}
 <div class="container my-3">
+    <!-- 에러 출력 영역 -->
+    {% for message in get_flashed_messages() %}
+    <div class="alert alert-danger" role="alert">
+        {{ message }}
+    </div>
+    {% endfor %}
+
     <!-- 질문 상세 -->
     <h2 class="border-bottom py-2">{{ question.subject }}</h2>
-    <div class="card my-3">
-        <div class="card-body">
-            <div class="card-text" style="white-space: pre-line;">{{ question.content }}</div>
-            <div class="d-flex justify-content-end">
-                <div class="badge badge-light p-2 text-left">
-                    <div class="mb-2">{{ question.user.username }} </div>
-                    <div>{{ question.create_date|datetime }}</div>
+    <div class="row my-3">
+        <div class="col-1"> <!-- 추천 영역 -->
+            <div class="bg-light text-center p-3 border font-weight-bolter mb-1">
+                {{ question.voter|length }}
+            </div>
+            <a href="#" data-uri="{{ url_for('vote.question', question_id=question.id) }}"
+               class="recommend btn btn-sm btn-secondary btn-block my-1">추천</a>
+        </div>
+        <div class="col-11"> <!-- 질문 영역 -->
+            <div class="card">
+                <!-- 질문 내용 -->
+                <div class="card-body">
+                    <div class="card-text" style="white-space: pre-line;">{{ question.content }}</div>
+                    <div class="d-flex justify-content-end">
+                        <div class="badge badge-light p-2 text-left">
+                            <div class="mb-2">{{ question.user.username }} </div>
+                            <div>{{ question.create_date|datetime }}</div>
+                        </div>
+                    </div>
                 </div>
+                <!-- 질문 수정/삭제 - 자신이 만든 것만 -->
+                {% if g.user == question.user %}
+                <div class="my-3">
+                    <a href="{{ url_for('question.modify', question_id=question.id) }}"
+                       class="btn btn-sm btn-outline-secondary">수정</a>
+                    <a href="#" class="delete btn btn-sm btn-outline-secondary"
+                       data-uri="{{ url_for('question.delete', question_id=question.id) }}">삭제</a>
+                </div>
+                {% endif %}
             </div>
         </div>
-        <!-- 질문 수정/삭제 - 자신이 만든 것만 -->
-        {% if g.user == question.user %}
-        <div class="my-3">
-            <a href="{{ url_for('question.modify', question_id=question.id) }}"
-               class="btn btn-sm btn-outline-secondary">수정</a>
-            <a href="#" class="delete btn btn-sm btn-outline-secondary"
-               data-uri="{{ url_for('question.delete', question_id=question.id) }}">삭제</a>
-        </div>
-        {% endif %}
     </div>
 
     <!-- 답변 개수 -->
@@ -29,23 +48,35 @@
 
     <!-- 답변 목록 -->
     {% for answer in question.answer_set %}
-    <div class="card my-3">
-        <div class="card-body">
-            <div class="card-text" style="white-space: pre-line;">{{ answer.content }}</div>
-            <div class="d-flex justify-content-end">
-                <div class="badge badge-light p-2 text-left">
-                    <div class="mb-2">{{ question.user.username }} </div>
-                    <div>{{ answer.create_date|datetime }}</div>
+    <a name="answer_{{ answer.id }}"></a>  <!-- 답변 앵커 -->
+    <div class="row my-3">
+        <div class="col-1"> <!-- 답변 추천 영역 -->
+            <div class="bg-light text-center p-3 border font-weight-bolter mb-1">
+                {{ answer.voter|length }}
+            </div>
+            <a href="#" data-uri="{{ url_for('vote.answer', answer_id=answer.id) }}"
+               class="recommend btn btn-sm btn-secondary btn-block my-1">추천</a>
+        </div>
+        <div class="col-11"> <!-- 답변 상세 영역 -->
+            <div class="card">
+                <div class="card-body">
+                    <div class="card-text" style="white-space: pre-line;">{{ answer.content }}</div>
+                    <div class="d-flex justify-content-end">
+                        <div class="badge badge-light p-2 text-left">
+                            <div class="mb-2">{{ question.user.username }} </div>
+                            <div>{{ answer.create_date|datetime }}</div>
+                        </div>
+                        <!-- 답변 수정/삭제 - 자신이 만든 것만 -->
+                        {% if g.user == question.user %}
+                        <div class="my-3">
+                            <a href="{{ url_for('answer.modify', answer_id=answer.id) }}"
+                               class="btn btn-sm btn-outline-secondary">수정</a>
+                            <a href="#" class="delete btn btn-sm btn-outline-secondary"
+                               data-uri="{{ url_for('answer.delete', answer_id=answer.id) }}">삭제</a>
+                        </div>
+                        {% endif %}
+                    </div>
                 </div>
-                <!-- 답변 수정/삭제 - 자신이 만든 것만 -->
-                {% if g.user == question.user %}
-                <div class="my-3">
-                    <a href="{{ url_for('answer.modify', answer_id=answer.id) }}"
-                       class="btn btn-sm btn-outline-secondary">수정</a>
-                    <a href="#" class="delete btn btn-sm btn-outline-secondary"
-                       data-uri="{{ url_for('answer.delete', answer_id=answer.id) }}">삭제</a>
-                </div>
-                {% endif %}
             </div>
         </div>
     </div>
@@ -74,6 +105,11 @@
 $(document).ready(function(){
     $(".delete").on('click', function() {
         if(confirm("정말로 삭제할랑까나?")) {
+            location.href = $(this).data('uri');
+        }
+    });
+    $(".recommend").on('click', function() {
+        if(confirm("정말 추천할라꼬?")) {
             location.href = $(this).data('uri');
         }
     });

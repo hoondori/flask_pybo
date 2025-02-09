@@ -63,7 +63,7 @@
                     <div class="card-text" style="white-space: pre-line;">{{ answer.content|markdown }}</div>
                     <div class="d-flex justify-content-end">
                         <div class="badge badge-light p-2 text-left">
-                            <div class="mb-2">{{ question.user.username }} </div>
+                            <div class="mb-2">{{ answer.user.username }} </div>
                             <div>{{ answer.create_date|datetime }}</div>
                         </div>
                         <!-- 답변 수정/삭제 - 자신이 만든 것만 -->

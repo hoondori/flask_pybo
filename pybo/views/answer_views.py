@@ -22,7 +22,9 @@ def create(question_id):
     question = Question.query.get_or_404(question_id)
     if form.validate_on_submit():
         content = request.form['content']
+        print('answer create', g.user.username)
         answer = Answer(content=content, create_date=datetime.now(), user=g.user)
+        db.session.add(answer)
         question.answer_set.append(answer)
         db.session.commit()
         return redirect('{}#answer_{}'.format(

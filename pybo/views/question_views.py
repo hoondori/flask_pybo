@@ -1,10 +1,11 @@
 from flask import Blueprint, render_template, request, url_for, g, flash
 from werkzeug.utils import redirect
 from .. import db
-from pybo.models import Question, Answer
+from pybo.models import Question, Answer, User, question_voter
 from pybo.forms import QuestionForm, AnswerForm
 from datetime import datetime
 from pybo.views.auth_views import login_required
+from sqlalchemy import func
 
 
 bp = Blueprint('question', __name__, url_prefix='/question')
@@ -16,8 +17,45 @@ def _list():
     :return:
     """
     page = request.args.get('page', type=int, default=1) # 페이지
-    question_list = Question.query.order_by(Question.create_date.desc())
+    kw = request.args.get('kw', type=str, default='') # 검색어
+    so = request.args.get('so', type=str, default='') # 정렬
+
+    # 정렬
+    if so == 'recommend':
+        sub_query = db.session.query(question_voter.c.question_id, func.count('*').label('num_voter')) \
+            .group_by(question_voter.c.question_id).subquery()
+        question_list = Question.query \
+            .outerjoin(sub_query, Question.id == sub_query.c.question_id) \
+            .order_by(sub_query.c.num_voter.desc(), Question.create_date.desc())
+    elif so == 'popular':
+        sub_query = db.session.query(Answer.question_id, func.count('*').label('num_answer')) \
+            .group_by(Answer.question_id).subquery()
+        question_list = Question.query \
+            .outerjoin(sub_query, Question.id == sub_query.c.question_id) \
+            .order_by(sub_query.c.num_answer.desc(), Question.create_date.desc())
+    else:  # recent
+        question_list = Question.query.order_by(Question.create_date.desc())
+
+    # 검색어 기반 필터링
+    if kw:
+        search = '%%{}%%'.format(kw)
+        sub_query = db.session.query(
+            Answer.question_id, Answer.content, User.username).join(
+                User, Answer.user_id == User.id).subquery()
+        question_list = question_list \
+            .join(User)\
+            .outerjoin(sub_query, sub_query.c.question_id == Question.id) \
+            .filter(Question.subject.ilike(search) |
+                    Question.content.ilike(search) |
+                    User.username.ilike(search) |
+                    sub_query.c.content.ilike(search) |
+                    sub_query.c.username.ilike(search)
+            ) \
+            .distinct()
+
+    # 페이징
     question_list = question_list.paginate(page=page, per_page=10)
+
     return render_template('question/question_list.html', question_list=question_list)
 
 @bp.route("/detail/<int:question_id>")
@@ -40,6 +78,7 @@ def create():
     """
     form = QuestionForm()
     if request.method == 'POST' and form.validate_on_submit():
+        print('question create', g.user)
         question = Question(subject=form.subject.data, content=form.content.data,
                             create_date=datetime.now(), user=g.user)
         db.session.add(question)

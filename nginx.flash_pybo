@@ -1,0 +1,14 @@
+server {
+    listen 8012;
+    server_name 43.202.105.245;
+
+    location = /favicon.ico { access_log off; log_not_found off; }
+    location /static {
+        alias /home/bitnami/projects/flask_pybo/static;
+    }
+
+    location / {
+        include proxy_params;
+        proxy_pass http://unix:/tmp/flaskpybo.sock;
+    }
+}
